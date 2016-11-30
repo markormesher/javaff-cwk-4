@@ -1,15 +1,16 @@
 package javaff.search;
 
-import javaff.JavaFF;
 import javaff.planning.Filter;
 import javaff.planning.State;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.Set;
 
 public class HillClimbingSearch extends Search {
 	private Hashtable<Integer, State> closed = new Hashtable<>();
-	private int maxDepth = 0;
 	protected Filter filter = null;
 
 	public HillClimbingSearch(State s) {
@@ -23,10 +24,6 @@ public class HillClimbingSearch extends Search {
 
 	public void setFilter(Filter f) {
 		filter = f;
-	}
-
-	public void setMaxDepth(int maxDepth) {
-		this.maxDepth = maxDepth;
 	}
 
 	private boolean needToVisit(State state) {
@@ -47,16 +44,8 @@ public class HillClimbingSearch extends Search {
 
 		// start from the initial state
 		State open = start;
-		int depth = 0;
 
 		while (open != null) { // whilst there is still a state to consider
-			// check we're not exceeding the max depth
-			if (depth >= maxDepth) {
-				JavaFF.errorOutput.println("Hill climbing max depth exceeded!");
-				break;
-			}
-			++depth;
-
 			// expand the current open state
 			Set<State> successors = open.getNextStates(filter.getActions(open));
 

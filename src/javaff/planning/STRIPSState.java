@@ -12,7 +12,7 @@ import javaff.data.TotalOrderPlan;
 import javaff.data.GroundCondition;
 import javaff.data.strips.Proposition;
 import javaff.data.Plan;
-import javaff.data.strips.STRIPSInstantAction;
+
 import java.math.BigDecimal;
 import java.util.Set;
 import java.util.HashSet;
@@ -28,7 +28,7 @@ public class STRIPSState extends State implements Cloneable
 	protected RelaxedPlanningGraph RPG;
 	protected boolean RPCalculated = false;
 	protected BigDecimal HValue = null;
-	public TotalOrderPlan RelaxedPlan = null; 
+	public TotalOrderPlan RelaxedPlan = null;
 	public Set helpfulActions = null;
 
 	protected STRIPSState()
@@ -102,7 +102,7 @@ public class STRIPSState extends State implements Cloneable
 		return actions;
 	}
 
-	public void calculateRP()
+	public void calculateRelaxedPlan()
 	{
 		if (!RPCalculated)
 		{
@@ -126,7 +126,7 @@ public class STRIPSState extends State implements Cloneable
 
 	public BigDecimal getHValue()
 	{
-		calculateRP();
+		calculateRelaxedPlan();
 		return HValue;
 	}
 
