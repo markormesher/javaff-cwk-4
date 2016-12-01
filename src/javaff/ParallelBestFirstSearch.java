@@ -18,7 +18,7 @@ public class ParallelBestFirstSearch extends ParallelSearch {
 
 	@Override
 	boolean reRun() {
-		return true; // TODO: should be false
+		return false;
 	}
 
 	@Override

@@ -18,7 +18,7 @@ public class ParallelEnforcedHillClimbingHelpfulActionSearch extends ParallelSea
 
 	@Override
 	boolean reRun() {
-		return true; // TODO: should be false
+		return false;
 	}
 
 	@Override

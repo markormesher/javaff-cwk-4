@@ -36,11 +36,8 @@ public class JavaFF {
 	private static HashSet<TotalOrderPlan> solutions = new HashSet<>();
 	private static int bestPlanLength = -1;
 
-	private static File domainFile;
-	private static File problemFile;
 	private static File solutionFile;
 
-	private static UngroundProblem ungroundProblem;
 	private static GroundProblem groundProblem;
 
 	public static void main(String args[]) {
@@ -52,8 +49,8 @@ public class JavaFF {
 		}
 
 		// read inputs
-		domainFile = new File(args[0]);
-		problemFile = new File(args[1]);
+		File domainFile = new File(args[0]);
+		File problemFile = new File(args[1]);
 		if (args.length > 2) {
 			generator = new Random(Integer.parseInt(args[2]));
 		} else {
@@ -65,8 +62,8 @@ public class JavaFF {
 			solutionFile = null;
 		}
 
-		// avoid repeated work
-		ungroundProblem = PDDL21parser.parseFiles(domainFile, problemFile);
+		// avoid repeated work by parsing and grounding here
+		UngroundProblem ungroundProblem = PDDL21parser.parseFiles(domainFile, problemFile);
 		if (ungroundProblem == null) {
 			System.out.println("Parsing error - see console for details");
 			return;
@@ -78,9 +75,11 @@ public class JavaFF {
 		}
 
 		// spawn searches
+		// TODO: feature switches to decide what to run
 		spawnSearch(SearchType.BEST_FIRST_NULL_FILTER);
 		spawnSearch(SearchType.HC_HELPFUL_FILTER);
 		spawnSearch(SearchType.EHC_HELPFUL_FILTER);
+		spawnSearch(SearchType.RANDOM_NULL_FILTER);
 
 		infoOutput.println("Setup finished - planners now running in background");
 		infoOutput.println();
@@ -113,53 +112,68 @@ public class JavaFF {
 			case EHC_HELPFUL_FILTER:
 				new ParallelEnforcedHillClimbingHelpfulActionSearch(localGroundProblem, initialState).start();
 				break;
+
+			case RANDOM_NULL_FILTER:
+				new ParallelRandomForwardsSearch(localGroundProblem, initialState).start();
+				break;
 		}
 	}
 
 	static synchronized void onPlanFound(TotalOrderPlan totalOrderPlan, boolean reRun, SearchType type, double planningTime) {
 
+		// cheapest checks first:
+
 		boolean planWasFound = totalOrderPlan != null;
-
-		boolean planIsUnique = planWasFound && !solutions.contains(totalOrderPlan);
-		solutions.add(totalOrderPlan);
-
-		boolean planIsBetter = planIsUnique && (bestPlanLength < 0 || totalOrderPlan.getPlanLength() < bestPlanLength);
-
-		if (planWasFound && planIsUnique && planIsBetter) {
-
-			// **************
-			// Print a header
-			// **************
-
-			infoOutput.println();
-			infoOutput.println(((System.currentTimeMillis() - startTime) / 1000.0) + "s: Better plan found by " + type);
-			infoOutput.println("This is plan #" + solutions.size());
-			infoOutput.println("Best length was " + (bestPlanLength < 0 ? "inf" : bestPlanLength));
-			infoOutput.println("Best length now " + totalOrderPlan.getPlanLength());
-			infoOutput.println();
-			bestPlanLength = totalOrderPlan.getPlanLength();
-
-			// ***************
-			// Schedule a plan
-			// ***************
-
-			long beforeScheduling = System.currentTimeMillis();
-			Scheduler scheduler = new JavaFFScheduler(groundProblem);
-			TimeStampedPlan timeStampedPlan = scheduler.schedule(totalOrderPlan);
-			long afterScheduling = System.currentTimeMillis();
-			double schedulingTime = (afterScheduling - beforeScheduling) / 1000.00;
-
-			// **************
-			// Print the plan
-			// **************
-
-			totalOrderPlan.print(planOutput);
-			timeStampedPlan.print(planOutput);
-			if (solutionFile != null) writePlanToFile(timeStampedPlan, solutionFile);
-
-			infoOutput.println("Planning Time   =   " + planningTime + "sec");
-			infoOutput.println("Scheduling Time =   " + schedulingTime + "sec");
+		if (!planWasFound) {
+			if (reRun) spawnSearch(type);
+			return;
 		}
+
+		boolean planIsBetter = bestPlanLength < 0 || totalOrderPlan.getPlanLength() < bestPlanLength;
+		if (!planIsBetter) {
+			if (reRun) spawnSearch(type);
+			return;
+		}
+
+		boolean planIsUnique = !solutions.contains(totalOrderPlan);
+		solutions.add(totalOrderPlan);
+		if (!planIsUnique) {
+			if (reRun) spawnSearch(type);
+			return;
+		}
+
+		// **************
+		// Print a header
+		// **************
+
+		infoOutput.println();
+		infoOutput.println(((System.currentTimeMillis() - startTime) / 1000.0) + "s: Better plan found by " + type);
+		infoOutput.println("This is plan #" + solutions.size());
+		infoOutput.println("Best length was " + (bestPlanLength < 0 ? "inf" : bestPlanLength));
+		infoOutput.println("Best length now " + totalOrderPlan.getPlanLength());
+		infoOutput.println();
+		bestPlanLength = totalOrderPlan.getPlanLength();
+
+		// ***************
+		// Schedule a plan
+		// ***************
+
+		long beforeScheduling = System.currentTimeMillis();
+		Scheduler scheduler = new JavaFFScheduler(groundProblem);
+		TimeStampedPlan timeStampedPlan = scheduler.schedule(totalOrderPlan);
+		long afterScheduling = System.currentTimeMillis();
+		double schedulingTime = (afterScheduling - beforeScheduling) / 1000.00;
+
+		// **************
+		// Print the plan
+		// **************
+
+		totalOrderPlan.print(planOutput);
+		timeStampedPlan.print(planOutput);
+		if (solutionFile != null) writePlanToFile(timeStampedPlan, solutionFile);
+
+		infoOutput.println("Planning Time   =   " + planningTime + "sec");
+		infoOutput.println("Scheduling Time =   " + schedulingTime + "sec");
 
 		if (reRun) spawnSearch(type);
 	}
@@ -179,7 +193,8 @@ public class JavaFF {
 	public enum SearchType {
 		BEST_FIRST_NULL_FILTER,
 		EHC_HELPFUL_FILTER,
-		HC_HELPFUL_FILTER
+		HC_HELPFUL_FILTER,
+		RANDOM_NULL_FILTER
 	}
 
 }
