@@ -9,223 +9,236 @@
 
 package javaff;
 
-import javaff.data.*;
+import javaff.data.PDDLPrinter;
+import javaff.data.UngroundProblem;
+import javaff.data.GroundProblem;
+import javaff.data.Plan;
+import javaff.data.TotalOrderPlan;
+import javaff.data.TimeStampedPlan;
 import javaff.parser.PDDL21parser;
-import javaff.planning.HelpfulFilter;
-import javaff.planning.NullFilter;
 import javaff.planning.State;
 import javaff.planning.TemporalMetricState;
-import javaff.scheduling.JavaFFScheduler;
+import javaff.planning.RelaxedTemporalMetricPlanningGraph;
+import javaff.planning.HelpfulFilter;
+import javaff.planning.NullFilter;
 import javaff.scheduling.Scheduler;
+import javaff.scheduling.JavaFFScheduler;
+import javaff.search.Search;
 import javaff.search.BestFirstSearch;
-import javaff.search.EnforcedHillClimbingSearch;
 import javaff.search.HillClimbingSearch;
+import javaff.search.BestSuccessorSelector;
+import javaff.search.IdentidemSearch;
 
-import java.io.*;
+
+
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Random;
 
-public class JavaFF {
-
-	public static BigDecimal EPSILON = new BigDecimal(0.01);
+public class JavaFF
+{
+    public static BigDecimal EPSILON = new BigDecimal(0.01);
 	public static BigDecimal MAX_DURATION = new BigDecimal("100000"); //maximum duration in a duration constraint
+	public static boolean VALIDATE = false;
 
+ 
 	public static Random generator = null;
+   
+   
 
 	public static PrintStream planOutput = System.out;
 	public static PrintStream parsingOutput = System.out;
 	public static PrintStream infoOutput = System.out;
 	public static PrintStream errorOutput = System.err;
 
-	public static void main(String args[]) {
-		EPSILON = EPSILON.setScale(2, BigDecimal.ROUND_HALF_EVEN);
-		MAX_DURATION = MAX_DURATION.setScale(2, BigDecimal.ROUND_HALF_EVEN);
-
+	public static void main (String args[]) {
+		EPSILON = EPSILON.setScale(2,BigDecimal.ROUND_HALF_EVEN);
+		MAX_DURATION = MAX_DURATION.setScale(2,BigDecimal.ROUND_HALF_EVEN);
+		
 		generator = new Random();
-
+		
 		if (args.length < 2) {
 			System.out.println("Parameters needed: domainFile.pddl problemFile.pddl [random seed] [outputfile.sol]");
+
 		} else {
 			File domainFile = new File(args[0]);
 			File problemFile = new File(args[1]);
 			File solutionFile = null;
-			if (args.length > 2) generator = new Random(Integer.parseInt(args[2]));
-
-			if (args.length > 3) solutionFile = new File(args[3]);
-
-			Plan plan = plan(domainFile, problemFile);
-
+			if (args.length > 2)
+			{
+				generator = new Random(Integer.parseInt(args[2]));
+			}
+	
+			if (args.length > 3)
+			{
+				solutionFile = new File(args[3]);
+			}
+	
+			Plan plan = plan(domainFile,problemFile);
+	
 			if (solutionFile != null && plan != null) writePlanToFile(plan, solutionFile);
+			
 		}
 	}
 
-	public static Plan plan(File dFile, File pFile) {
 
-		// ****************************
-		// Parse and ground the problem
-		// ****************************
-
+    public static Plan plan(File dFile, File pFile)
+    {
+		// ********************************
+		// Parse and Ground the Problem
+		// ********************************
 		long startTime = System.currentTimeMillis();
-
+		
 		UngroundProblem unground = PDDL21parser.parseFiles(dFile, pFile);
-		if (unground == null) {
+
+		if (unground == null)
+		{
 			System.out.println("Parsing error - see console for details");
 			return null;
 		}
+
+
+		//PDDLPrinter.printDomainFile(unground, System.out);
+		//PDDLPrinter.printProblemFile(unground, System.out);
 
 		GroundProblem ground = unground.ground();
 
 		long afterGrounding = System.currentTimeMillis();
 
-		// *****************
+		// ********************************
 		// Search for a plan
-		// *****************
+		// ********************************
 
-		infoOutput.println("Searching...");
+		// Get the initial state
 		TemporalMetricState initialState = ground.getTemporalMetricInitialState();
-		State goalState = performFFSearch(initialState);
+		
+                State goalState = goalState = performFFSearch(initialState);
+                
 		long afterPlanning = System.currentTimeMillis();
 
-		TotalOrderPlan top = null;
+                TotalOrderPlan top = null;
 		if (goalState != null) top = (TotalOrderPlan) goalState.getSolution();
-		top.print(planOutput);
+		//top.print(planOutput);
+
 
 		/*javaff.planning.PlanningGraph pg = initialState.getRPG();
 		Plan plan  = pg.getPlan(initialState);
 		plan.print(planOutput);
 		return null;*/
 
-		// ***************
+		// ********************************
 		// Schedule a plan
-		// ***************
+		// ********************************
 
-		TimeStampedPlan tsp = null;
-		if (goalState != null) {
-			infoOutput.println("Scheduling...");
-			Scheduler scheduler = new JavaFFScheduler(ground);
-			tsp = scheduler.schedule(top);
-		}
+                TimeStampedPlan tsp = null;
+                
+                if (goalState != null)
+                {
+                   
+                   infoOutput.println("Scheduling");
+		
+                   Scheduler scheduler = new JavaFFScheduler(ground);
+                   tsp = scheduler.schedule(top);
+                }
+                
 
 		long afterScheduling = System.currentTimeMillis();
-
+		
 		if (tsp != null) tsp.print(planOutput);
 
-		double groundingTime = (afterGrounding - startTime) / 1000.00;
-		double planningTime = (afterPlanning - afterGrounding) / 1000.00;
-		double schedulingTime = (afterScheduling - afterPlanning) / 1000.00;
+		double groundingTime = (afterGrounding - startTime)/1000.00;
+		double planningTime = (afterPlanning - afterGrounding)/1000.00;
+		double schedulingTime = (afterScheduling - afterPlanning)/1000.00;
 
-		infoOutput.println("Instantiation Time =\t\t" + groundingTime + "sec");
-		infoOutput.println("Planning Time =\t" + planningTime + "sec");
-		infoOutput.println("Scheduling Time =\t" + schedulingTime + "sec");
+		infoOutput.println("Instantiation Time =\t\t"+groundingTime+"sec");
+		infoOutput.println("Planning Time =\t"+planningTime+"sec");
+		infoOutput.println("Scheduling Time =\t"+schedulingTime+"sec");
 
+		
 		return tsp;
 	}
 
-	private static void writePlanToFile(Plan plan, File fileOut) {
-		try {
+	private static void writePlanToFile(Plan plan, File fileOut)
+    {
+		try
+	    {
 			FileOutputStream outputStream = new FileOutputStream(fileOut);
 			PrintWriter printWriter = new PrintWriter(outputStream);
 			plan.print(printWriter);
 			printWriter.close();
-		} catch (FileNotFoundException e) {
+		}
+		catch (FileNotFoundException e)
+	    {
 			errorOutput.println(e);
 			e.printStackTrace();
 		}
-	}
 
-	public static State performFFSearch(TemporalMetricState initialState) {
+    }
+    
+    public static State performFFSearch(TemporalMetricState initialState) {
+	
+	// Implementation of standard FF-style search
+	infoOutput.println("Performing search as in FF - first considering HC with only helpful actions");
 
-		// version 1 = unmodified original (remainder of this method)
-		// version 2 = modified for coursework 1, exercise 2
-		// version 3 = modified for coursework 1, exercise 3
-		// version 4 = modified for coursework 2
-		final int VERSION = 4;
-		if (VERSION == 2) return performModifiedFFSearch_cw1_ex2(initialState);
-		if (VERSION == 3) return performModifiedFFSearch_cw1_ex3(initialState);
-		if (VERSION == 4) return performModifiedFFSearch_cw2(initialState);
+	// Now, initialise an HCS searcher
+	HillClimbingSearch HCS = new HillClimbingSearch(initialState);
+	
+	HCS.setFilter(HelpfulFilter.getInstance()); // and use the helpful actions neighbourhood
+	//HERE WE SENT THE MAX DEPTH TO 20 FOR HCS
+	//HCS.setMaxDepth(20);
 
-		// Enforced Hill Climbing, with the HelpfulFilter
-		infoOutput.println("Performing search as in FF - first considering EHC with helpful actions");
-		EnforcedHillClimbingSearch ehcs = new EnforcedHillClimbingSearch(initialState);
-		ehcs.setFilter(HelpfulFilter.getInstance());
-		State goalState = ehcs.search();
-		if (goalState != null) return goalState;
+	// Try and find a plan using EHS
+	State goalState = HCS.search();
 
-		// Best-first search, with the NullFilter
-		infoOutput.println("EHC failed; considering best-first search with all actions");
-		BestFirstSearch bfs = new BestFirstSearch(initialState);
-		bfs.setFilter(NullFilter.getInstance());
-		goalState = bfs.search();
-		if (goalState != null) return goalState;
+		if (goalState == null) // if we can't find a solution in the first attempt.
+		{
+			infoOutput.println("TRYING IDENTIDEM");
+			
+			IdentidemSearch idn = new IdentidemSearch(initialState);
+			idn.setFilter(HelpfulFilter.getInstance());
+			idn.setSelector(BestSuccessorSelector.getInstance());
+			goalState = idn.successorSelectorSearch();
+			if(goalState != null){
+				return goalState;
+			}
+			//EXERCISE 3: DEPTH-BOUNDED SEARCH WITH RESTARTS
+			// for (int depthBound = 5; depthBound < 100; ++depthBound){
 
-		return goalState;
-	}
+			// 	HillClimbingSearch hcAllActions = new HillClimbingSearch(initialState);
+			// 	//HelpfulFilter and RandomThreeFilter
+			// 	hcAllActions.setFilter(HelpfulFilter.getInstance());
+			// 	//BestSuccessorSelector or RouletteSelection
+			// 	hcAllActions.setSelector(RouletteSelection.getInstance());
+				
+			// 	//HERE WE SENT THE MAX DEPTH TO 20 FOR hcAllActions
+			// 	hcAllActions.setMaxDepth(depthBound);
+			// 	//goalState = hcAllActions.search();
+				
+			// 	  if(depthBound != 0){
+			// 	    goalState = hcAllActions.successorSelectorSearch();
+			// 	    //goalState = hcAllActions.search();
+			// 	  }
+			// }
 
-	private static State performModifiedFFSearch_cw1_ex2(TemporalMetricState initialState) {
-		// Enforced Hill Climbing, with the NullFilter
-		infoOutput.println("Performing search as in FF - first considering EHC with all actions");
-		EnforcedHillClimbingSearch ehcs = new EnforcedHillClimbingSearch(initialState);
-		ehcs.setFilter(NullFilter.getInstance());
-		State goalState = ehcs.search();
-		if (goalState != null) return goalState;
-
-		// Best-first search, with the NullFilter
-		infoOutput.println("EHC failed; considering best-first search with all actions");
-		BestFirstSearch bfs = new BestFirstSearch(initialState);
-		bfs.setFilter(NullFilter.getInstance());
-		goalState = bfs.search();
-		if (goalState != null) return goalState;
-
-		return null;
-	}
-
-	private static State performModifiedFFSearch_cw1_ex3(TemporalMetricState initialState) {
-		// Enforced Hill Climbing, with the HelpfulFilter
-		infoOutput.println("Performing search as in FF - first considering EHC with only helpful actions");
-		EnforcedHillClimbingSearch ehcs1 = new EnforcedHillClimbingSearch(initialState);
-		ehcs1.setFilter(HelpfulFilter.getInstance());
-		State goalState = ehcs1.search();
-		if (goalState != null) return goalState;
-
-		// Enforced Hill Climbing, with the NullFilter
-		infoOutput.println("First EHC failed; considering EHC with all actions");
-		EnforcedHillClimbingSearch ehcs2 = new EnforcedHillClimbingSearch(initialState);
-		ehcs2.setFilter(NullFilter.getInstance());
-		goalState = ehcs2.search();
-		if (goalState != null) return goalState;
-
-		// Best-first search, with the NullFilter
-		infoOutput.println("Second EHC failed; considering best-first search with all actions");
-		BestFirstSearch bfs = new BestFirstSearch(initialState);
-		bfs.setFilter(NullFilter.getInstance());
-		goalState = bfs.search();
-		if (goalState != null) return goalState;
-
-		return null;
-	}
-
-	private static State performModifiedFFSearch_cw2(TemporalMetricState initialState) {
-		State goalState;
-
-		// Hill Climbing, with the HelpfulFilter
-		infoOutput.println("Performing search as in FF - first considering HC with helpful actions");
-		for (int depthBound = 5; depthBound < 100; ++depthBound) {
-			infoOutput.println("Trying HC with depth bound " + depthBound);
-			HillClimbingSearch hcs = new HillClimbingSearch(initialState);
-			hcs.setFilter(HelpfulFilter.getInstance());
-			hcs.setMaxDepth(depthBound);
-			goalState = hcs.search();
-			if (goalState != null) return goalState;
+		}else{
+			infoOutput.println("HC failed with all actions and helpful actions, using best-first search, with all actions");
+			
+			// create a Best-First Searcher
+			BestFirstSearch BFS = new BestFirstSearch(initialState);
+			
+			// ... change to using the 'all actions' neighbourhood (a null filter, as it removes nothing)
+			
+			BFS.setFilter(NullFilter.getInstance()); 
+			
+			// and use that
+			goalState = BFS.search();
 		}
 
-		// Best-first search, with the NullFilter
-		infoOutput.println("HC failed; considering best-first search with all actions");
-		BestFirstSearch bfs = new BestFirstSearch(initialState);
-		bfs.setFilter(NullFilter.getInstance());
-		goalState = bfs.search();
-		if (goalState != null) return goalState;
-
-		return null;
-	}
-
+	return goalState; // return the plan 
+    }
 }

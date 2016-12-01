@@ -17,7 +17,7 @@ import javaff.search.SuccessorSelector;
 
 	Sedar Olmez 01/12/2016*/
 
-public class Identidem extends Search
+public class IdentidemSearch extends Search
 {
 	protected BigDecimal bestHValue;
 
@@ -27,12 +27,12 @@ public class Identidem extends Search
 	protected int probeDepthBound;
 	protected SuccessorSelector SS1;
 	
-	public Identidem(State s)
+	public IdentidemSearch(State s)
 	{
 		this(s, new HValueComparator());
 	}
 
-	public Identidem(State s, Comparator c)
+	public IdentidemSearch(State s, Comparator c)
 	{
 		super(s);
 		setComparator(c);
@@ -51,6 +51,10 @@ public class Identidem extends Search
 			
 		return (State) ((LinkedList) open).removeFirst();
 	}
+
+	public void setSelector(SuccessorSelector s){
+		SS1 = s;
+	}
 	
 	public boolean needToVisit(State s) {
 		Integer Shash = new Integer(s.hashCode()); // compute hash for state
@@ -62,23 +66,23 @@ public class Identidem extends Search
 		return true; // and return true
 	}
 
-	public State localSearchMinima(State min){
-		/*Intially we set our lookahead, probeDepthBound to 2 and increment by 1 if no better 
-			successor found, less than the current one.*/
-		probeDepthBound = 2;
+	// public State localSearchMinima(State min){
+	// 	/*Intially we set our lookahead, probeDepthBound to 2 and increment by 1 if no better 
+	// 		successor found, less than the current one.*/
+	// 	probeDepthBound = 2;
 
-		Set neighbourNodes = min.getNextStates(filter.getActions(s));
+	// 	Set neighbourNodes = min.getNextStates(filter.getActions(s));
 
-		Iterator iterateNodes = neighbourNodes.iterator();
+	// 	Iterator iterateNodes = neighbourNodes.iterator();
 
-		while (iterateNodes.hasNext()){
+	// 	while (iterateNodes.hasNext()){
 
-			for (int probes : probeDepthBound){
+	// 		for (int probes : probeDepthBound){
 				
-			}
+	// 		}
 
-		}
-	} 
+	// 	}
+	// } 
 
 		//Successor selector search.
 	public State successorSelectorSearch(){
@@ -107,50 +111,50 @@ public class Identidem extends Search
 		return goal;
 	}
 	
-	// public State search() {
+	public State search() {
 		
-	// 	if (start.goalReached()) { 
-	// 		return start;
-	// 	}
+		if (start.goalReached()) { 
+			return start;
+		}
 
-	// 	needToVisit(start); 
-	// 	open.add(start); 
-	// 	bestHValue = start.getHValue();
-	// 	javaff.JavaFF.infoOutput.println(bestHValue);
+		needToVisit(start); 
+		open.add(start); 
+		bestHValue = start.getHValue();
+		javaff.JavaFF.infoOutput.println(bestHValue);
 		
-	// 	while (!open.isEmpty()) 
-	// 	{	
-	// 		 State s = removeNext(); //Initial node
+		while (!open.isEmpty()) 
+		{	
+			 State s = removeNext(); //Initial node
 			
-	// 		 Set neighbour = s.getNextStates(filter.getActions(s)); // and find its neighbourhood
+			 Set neighbour = s.getNextStates(filter.getActions(s)); // and find its neighbourhood
 			
-	// 		 Iterator succItr = neighbour.iterator();			
+			 Iterator succItr = neighbour.iterator();			
 		
-	// 		 while (succItr.hasNext()) {
+			 while (succItr.hasNext()) {
 
-	// 		 	State succ = (State) succItr.next(); // next successor
+			 	State succ = (State) succItr.next(); // next successor
 
-	// 			if (needToVisit(succ)) {
+				// if (needToVisit(succ)) {
 
-	// 		 		if (succ.goalReached()) { // if we've found a goal state - return it as the solution
-	// 		 			return succ;
-	// 		 		} else if (succ.getHValue() <= s.getHValue) {	
-	// 					// if we've found a state with a better heuristic value than the best seen so far
-	// 					bestHValue = succ.getHValue(); // note the new best avlue
-	// 					javaff.JavaFF.infoOutput.println(bestHValue);
-	// 					open = new LinkedList(); // clear the open list
-	// 					open.add(succ); // put this on it
-	// 					break; // and skip looking at the other successors
-	// 				} else {
+			 // 		if (succ.goalReached()) { // if we've found a goal state - return it as the solution
+			 // 			return succ;
+			 // 		} else if (succ.getHValue() <= s.getHValue) {	
+				// 		// if we've found a state with a better heuristic value than the best seen so far
+				// 		bestHValue = succ.getHValue(); // note the new best avlue
+				// 		javaff.JavaFF.infoOutput.println(bestHValue);
+				// 		open = new LinkedList(); // clear the open list
+				// 		open.add(succ); // put this on it
+				// 		break; // and skip looking at the other successors
+				// 	} else {
 
-	// 					//If no better heuristic value found, then we must look ahead using the probeDepthBound
+				// 		//If no better heuristic value found, then we must look ahead using the probeDepthBound
 
-	// 					open.add(succ); // otherwise, add to the open list
-	// 				}
-	// 		 	}
-	// 		}
+				// 		open.add(succ); // otherwise, add to the open list
+				// 	}
+			 // 	}
+			}
 
-	// 	}
-	// 	return null;
-	// }
+		}
+		return null;
+	}
 }
