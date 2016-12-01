@@ -4,8 +4,6 @@ import javaff.data.GroundProblem;
 import javaff.data.TotalOrderPlan;
 import javaff.planning.TemporalMetricState;
 
-import java.util.ConcurrentModificationException;
-
 public abstract class ParallelSearch extends Thread {
 
 	private GroundProblem groundProblem;
@@ -37,7 +35,6 @@ public abstract class ParallelSearch extends Thread {
 		try {
 			goalState = doSearch(initialState);
 		} catch (Exception e) {
-			JavaFF.errorOutput.println("Killed");
 			e.printStackTrace();
 			JavaFF.onPlanFound(null, true, getType(), 0);
 			return;
