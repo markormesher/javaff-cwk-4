@@ -59,6 +59,10 @@ public class Identidem extends Search
 		closed.put(Shash, s); // otherwise put it on
 		return true; // and return true
 	}
+
+	public State localSearchMinima(State min){
+		
+	} 
 	
 	public State search() {
 		
@@ -77,19 +81,21 @@ public class Identidem extends Search
 		
 		while (!open.isEmpty()) 
 		{	
-			State s = removeNext(); 
+			 State s = removeNext(); //Initial node
 			
-			Set successors = s.getNextStates(filter.getActions(s)); // and find its neighbourhood
+			 Set neighbour = s.getNextStates(filter.getActions(s)); // and find its neighbourhood
 			
-			Iterator succItr = successors.iterator();			
+			 Iterator succItr = neighbour.iterator();			
 		
-			while (succItr.hasNext()) {
-				State succ = (State) succItr.next(); // next successor
-			
+			 while (succItr.hasNext()) {
+
+			 	State succ = (State) succItr.next(); // next successor
+
 				if (needToVisit(succ)) {
-					if (succ.goalReached()) { // if we've found a goal state - return it as the solution
-						return succ;
-					} else if (succ.getHValue().compareTo(bestHValue) < 0) {
+
+			 		if (succ.goalReached()) { // if we've found a goal state - return it as the solution
+			 			return succ;
+			 		} else if (succ.getHValue() <= s.getHValue) {	
 						// if we've found a state with a better heuristic value than the best seen so far
 						bestHValue = succ.getHValue(); // note the new best avlue
 						javaff.JavaFF.infoOutput.println(bestHValue);
@@ -102,8 +108,9 @@ public class Identidem extends Search
 
 						open.add(succ); // otherwise, add to the open list
 					}
-				}
+			 	}
 			}
+
 		}
 		return null;
 	}
