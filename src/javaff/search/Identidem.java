@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.math.BigDecimal;
 import java.util.Hashtable;
 import java.util.Iterator;
+import javaff.search.SuccessorSelector;
 
 /* Identidem is built on the Enforced Hill Climbing framework, I will be using the EHC skeleton code to 
 	implement the Identidem algorithm, possibly with lookaheads
@@ -24,6 +25,7 @@ public class Identidem extends Search
 	protected LinkedList open;
 	protected Filter filter = null;
 	protected int probeDepthBound;
+	protected SuccessorSelector SS1;
 	
 	public Identidem(State s)
 	{
@@ -61,57 +63,94 @@ public class Identidem extends Search
 	}
 
 	public State localSearchMinima(State min){
-		
-	} 
-	
-	public State search() {
-		
 		/*Intially we set our lookahead, probeDepthBound to 2 and increment by 1 if no better 
 			successor found, less than the current one.*/
 		probeDepthBound = 2;
 
-		if (start.goalReached()) { 
-			return start;
-		}
+		Set neighbourNodes = min.getNextStates(filter.getActions(s));
 
-		needToVisit(start); 
-		open.add(start); 
-		bestHValue = start.getHValue();
-		javaff.JavaFF.infoOutput.println(bestHValue);
-		
-		while (!open.isEmpty()) 
-		{	
-			 State s = removeNext(); //Initial node
-			
-			 Set neighbour = s.getNextStates(filter.getActions(s)); // and find its neighbourhood
-			
-			 Iterator succItr = neighbour.iterator();			
-		
-			 while (succItr.hasNext()) {
+		Iterator iterateNodes = neighbourNodes.iterator();
 
-			 	State succ = (State) succItr.next(); // next successor
+		while (iterateNodes.hasNext()){
 
-				if (needToVisit(succ)) {
-
-			 		if (succ.goalReached()) { // if we've found a goal state - return it as the solution
-			 			return succ;
-			 		} else if (succ.getHValue() <= s.getHValue) {	
-						// if we've found a state with a better heuristic value than the best seen so far
-						bestHValue = succ.getHValue(); // note the new best avlue
-						javaff.JavaFF.infoOutput.println(bestHValue);
-						open = new LinkedList(); // clear the open list
-						open.add(succ); // put this on it
-						break; // and skip looking at the other successors
-					} else {
-
-						//If no better heuristic value found, then we must look ahead using the probeDepthBound
-
-						open.add(succ); // otherwise, add to the open list
-					}
-			 	}
+			for (int probes : probeDepthBound){
+				
 			}
 
 		}
-		return null;
+	} 
+
+		//Successor selector search.
+	public State successorSelectorSearch(){
+		State root = start;
+		Set firstsuccessor = root.getNextStates(root.getActions());
+		State selectorState = SS1.choose(firstsuccessor);
+		State goal = null;
+		Boolean exitWhile = false;
+
+		if(selectorState.goalReached()){
+			return selectorState;
+		}
+
+		Set successors = firstsuccessor;
+		successors.addAll(selectorState.getNextStates(selectorState.getActions()));
+
+		while (!exitWhile){
+			selectorState = SS1.choose(successors);
+			if(selectorState.goalReached()){
+				return selectorState;
+			}else{
+				successors.addAll(selectorState.getNextStates(selectorState.getActions()));
+			}
+		}
+		exitWhile = true;
+		return goal;
 	}
+	
+	// public State search() {
+		
+	// 	if (start.goalReached()) { 
+	// 		return start;
+	// 	}
+
+	// 	needToVisit(start); 
+	// 	open.add(start); 
+	// 	bestHValue = start.getHValue();
+	// 	javaff.JavaFF.infoOutput.println(bestHValue);
+		
+	// 	while (!open.isEmpty()) 
+	// 	{	
+	// 		 State s = removeNext(); //Initial node
+			
+	// 		 Set neighbour = s.getNextStates(filter.getActions(s)); // and find its neighbourhood
+			
+	// 		 Iterator succItr = neighbour.iterator();			
+		
+	// 		 while (succItr.hasNext()) {
+
+	// 		 	State succ = (State) succItr.next(); // next successor
+
+	// 			if (needToVisit(succ)) {
+
+	// 		 		if (succ.goalReached()) { // if we've found a goal state - return it as the solution
+	// 		 			return succ;
+	// 		 		} else if (succ.getHValue() <= s.getHValue) {	
+	// 					// if we've found a state with a better heuristic value than the best seen so far
+	// 					bestHValue = succ.getHValue(); // note the new best avlue
+	// 					javaff.JavaFF.infoOutput.println(bestHValue);
+	// 					open = new LinkedList(); // clear the open list
+	// 					open.add(succ); // put this on it
+	// 					break; // and skip looking at the other successors
+	// 				} else {
+
+	// 					//If no better heuristic value found, then we must look ahead using the probeDepthBound
+
+	// 					open.add(succ); // otherwise, add to the open list
+	// 				}
+	// 		 	}
+	// 		}
+
+	// 	}
+	// 	return null;
+	// }
 }
