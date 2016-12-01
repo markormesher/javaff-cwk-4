@@ -12,6 +12,8 @@ package javaff;
 import javaff.data.*;
 import javaff.parser.PDDL21parser;
 import javaff.planning.TemporalMetricState;
+import javaff.scheduling.JavaFFScheduler;
+import javaff.scheduling.Scheduler;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -34,9 +36,12 @@ public class JavaFF {
 	private static HashSet<TotalOrderPlan> solutions = new HashSet<>();
 	private static int bestPlanLength = -1;
 
-	static GroundProblem groundProblem;
-	static TemporalMetricState initialState;
+	private static File domainFile;
+	private static File problemFile;
 	private static File solutionFile;
+
+	private static UngroundProblem ungroundProblem;
+	private static GroundProblem groundProblem;
 
 	public static void main(String args[]) {
 		startTime = System.currentTimeMillis();
@@ -47,8 +52,8 @@ public class JavaFF {
 		}
 
 		// read inputs
-		File domainFile = new File(args[0]);
-		File problemFile = new File(args[1]);
+		domainFile = new File(args[0]);
+		problemFile = new File(args[1]);
 		if (args.length > 2) {
 			generator = new Random(Integer.parseInt(args[2]));
 		} else {
@@ -61,10 +66,16 @@ public class JavaFF {
 		}
 
 		// avoid repeated work
-		groundProblem = parseAndGround(domainFile, problemFile);
-		if (groundProblem == null) return;
-		initialState = groundProblem.getTemporalMetricInitialState();
-		if (initialState == null) return;
+		ungroundProblem = PDDL21parser.parseFiles(domainFile, problemFile);
+		if (ungroundProblem == null) {
+			System.out.println("Parsing error - see console for details");
+			return;
+		}
+		groundProblem = ungroundProblem.ground();
+		if (groundProblem == null) {
+			errorOutput.println("Ground problem was null!");
+			return;
+		}
 
 		// spawn searches
 		spawnSearch(SearchType.BEST_FIRST_NULL_FILTER);
@@ -75,83 +86,81 @@ public class JavaFF {
 		infoOutput.println();
 	}
 
-	private static GroundProblem parseAndGround(File dFile, File pFile) {
-
-		// ****************************
-		// Parse and ground the problem
-		// ****************************
-
-		long startTime = System.currentTimeMillis();
-
-		UngroundProblem unground = PDDL21parser.parseFiles(dFile, pFile);
-		if (unground == null) {
-			System.out.println("Parsing error - see console for details");
-			return null;
+	private static void spawnSearch(SearchType type) {
+		GroundProblem localGroundProblem;
+		try {
+			localGroundProblem = (GroundProblem) groundProblem.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return;
 		}
 
-		GroundProblem ground = unground.ground();
-		long afterGrounding = System.currentTimeMillis();
-		double groundingTime = (afterGrounding - startTime) / 1000.00;
-		infoOutput.println("Instantiation   =   " + groundingTime + "sec");
+		TemporalMetricState initialState = localGroundProblem.getTemporalMetricInitialState();
+		if (initialState == null) {
+			errorOutput.println("Initial state was null!");
+			return;
+		}
 
-		return ground;
-	}
-
-	private static void spawnSearch(SearchType type) {
 		switch (type) {
 			case BEST_FIRST_NULL_FILTER:
-				new ParallelBestFirstSearch().start();
+				new ParallelBestFirstSearch(localGroundProblem, initialState).start();
 				break;
 
 			case HC_HELPFUL_FILTER:
-				new ParallelHillClimbingHelpfulActionSearch().start();
+				new ParallelHillClimbingHelpfulActionSearch(localGroundProblem, initialState).start();
 				break;
 
 			case EHC_HELPFUL_FILTER:
-				new ParallelEnforcedHillClimbingHelpfulActionSearch().start();
+				new ParallelEnforcedHillClimbingHelpfulActionSearch(localGroundProblem, initialState).start();
 				break;
 		}
 	}
 
-	static synchronized void onPlanFound(TotalOrderPlan totalOrderPlan, TimeStampedPlan timeStampedPlan, boolean reRun, SearchType type, double planningTime, double schedulingTime) {
-		// fail if no plan was found
-		if (totalOrderPlan == null || timeStampedPlan == null) {
-			if (reRun) spawnSearch(type);
-			return;
-		}
+	static synchronized void onPlanFound(TotalOrderPlan totalOrderPlan, boolean reRun, SearchType type, double planningTime) {
 
-		// fail if we've seen this plan before
-		if (solutions.contains(totalOrderPlan)) {
-			if (reRun) spawnSearch(type);
-			return;
-		}
+		boolean planWasFound = totalOrderPlan != null;
+
+		boolean planIsUnique = planWasFound && !solutions.contains(totalOrderPlan);
 		solutions.add(totalOrderPlan);
 
-		// fail if this plan is no better
-		int planLength = totalOrderPlan.getPlanLength();
-		if (bestPlanLength > 0 && planLength >= bestPlanLength) {
-			if (reRun) spawnSearch(type);
-			return;
+		boolean planIsBetter = planIsUnique && (bestPlanLength < 0 || totalOrderPlan.getPlanLength() < bestPlanLength);
+
+		if (planWasFound && planIsUnique && planIsBetter) {
+
+			// **************
+			// Print a header
+			// **************
+
+			infoOutput.println();
+			infoOutput.println(((System.currentTimeMillis() - startTime) / 1000.0) + "s: Better plan found by " + type);
+			infoOutput.println("This is plan #" + solutions.size());
+			infoOutput.println("Best length was " + (bestPlanLength < 0 ? "inf" : bestPlanLength));
+			infoOutput.println("Best length now " + totalOrderPlan.getPlanLength());
+			infoOutput.println();
+			bestPlanLength = totalOrderPlan.getPlanLength();
+
+			// ***************
+			// Schedule a plan
+			// ***************
+
+			long beforeScheduling = System.currentTimeMillis();
+			Scheduler scheduler = new JavaFFScheduler(groundProblem);
+			TimeStampedPlan timeStampedPlan = scheduler.schedule(totalOrderPlan);
+			long afterScheduling = System.currentTimeMillis();
+			double schedulingTime = (afterScheduling - beforeScheduling) / 1000.00;
+
+			// **************
+			// Print the plan
+			// **************
+
+			totalOrderPlan.print(planOutput);
+			timeStampedPlan.print(planOutput);
+			if (solutionFile != null) writePlanToFile(timeStampedPlan, solutionFile);
+
+			infoOutput.println("Planning Time   =   " + planningTime + "sec");
+			infoOutput.println("Scheduling Time =   " + schedulingTime + "sec");
 		}
 
-		// this plan is unique and the best so far, so print it
-		infoOutput.println();
-		infoOutput.println(((System.currentTimeMillis() - startTime) / 1000.0) + "s: Better plan found by " + type);
-		infoOutput.println("This is plan #" + solutions.size());
-		infoOutput.println("Best length was " + (bestPlanLength < 0 ? "inf" : bestPlanLength));
-		infoOutput.println("Best length now " + planLength);
-		infoOutput.println();
-		bestPlanLength = planLength;
-
-		totalOrderPlan.print(planOutput);
-		timeStampedPlan.print(planOutput);
-
-		infoOutput.println("Planning Time   =   " + planningTime + "sec");
-		infoOutput.println("Scheduling Time =   " + schedulingTime + "sec");
-
-		if (solutionFile != null) writePlanToFile(timeStampedPlan, solutionFile);
-
-		// always maybe re-run
 		if (reRun) spawnSearch(type);
 	}
 

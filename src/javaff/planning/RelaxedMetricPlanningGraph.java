@@ -379,9 +379,9 @@ public class RelaxedMetricPlanningGraph extends RelaxedPlanningGraph
 
 		protected PGNamedFunction()
 		{
-			
+
 		}
-		
+
 		public PGNamedFunction(NamedFunction nf)
 		{
 			namedFunction = nf;
@@ -413,15 +413,15 @@ public class RelaxedMetricPlanningGraph extends RelaxedPlanningGraph
 		{
 			return ro.increase(this);
 		}
-		
+
 		public boolean decrease(PGResourceOperator ro)
 		{
 			return ro.decrease(this);
 		}
 	}
 
-	
-	
+
+
 	protected class PGNumberFunction implements PGFunction
 	{
 		public BigDecimal value;
@@ -453,7 +453,7 @@ public class RelaxedMetricPlanningGraph extends RelaxedPlanningGraph
 		}
 	}
 
-	
+
 
 	protected class PGBinaryFunction implements PGFunction
 	{

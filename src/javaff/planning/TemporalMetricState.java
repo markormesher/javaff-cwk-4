@@ -14,7 +14,6 @@ import javaff.data.TotalOrderPlan;
 import javaff.data.Metric;
 import javaff.data.Action;
 import javaff.data.strips.InstantAction;
-import javaff.data.temporal.DurativeAction;
 import javaff.data.temporal.StartInstantAction;
 import javaff.data.temporal.SplitInstantAction;
 import javaff.scheduling.SchedulabilityChecker;
@@ -48,7 +47,7 @@ public class TemporalMetricState extends MetricState
 		openActions = new HashSet();
 		invariants = new ArrayList();
 		checker = new VelosoSchedulabilityChecker();
-		
+
 	}
 
 	public boolean goalReached()
@@ -77,7 +76,7 @@ public class TemporalMetricState extends MetricState
 			TemporalMetricState dupli = (TemporalMetricState) this.clone();
 			dupli.apply(a);
 			result = c.addAction(((StartInstantAction)a).getSibling(), dupli);
-			
+
 		}
 		return result;
 	}
@@ -91,7 +90,7 @@ public class TemporalMetricState extends MetricState
 		List i = (List) ((ArrayList)invariants).clone();
 		Set na = (Set) ((HashSet) actions).clone();
 		TemporalMetricState ts = new TemporalMetricState(na, nf, goal, nfuncs, p, metric, oA, i);
-		ts.setRPG(RPG);
+		ts.setRPG(relaxedPlanningGraph);
 //		ts.setFilter(filter);
 		ts.checker = (VelosoSchedulabilityChecker) checker.clone();
 		return ts;
@@ -108,7 +107,7 @@ public class TemporalMetricState extends MetricState
 		s.checker.addAction((InstantAction)a, s);
 		return s;
 	}
-	
+
 	//public BigDecimal getGValue()
 	//{
 		//return super.getGValue().subtract(new BigDecimal(openActions.size()));

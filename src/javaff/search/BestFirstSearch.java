@@ -9,25 +9,23 @@ package javaff.search;
 
 import javaff.planning.State;
 import javaff.planning.Filter;
+
 import java.util.Comparator;
 import java.util.TreeSet;
 import java.util.Hashtable;
 
 
-public class BestFirstSearch extends Search
-{
+public class BestFirstSearch extends Search {
 
 	protected Hashtable closed;
 	protected TreeSet open;
 	protected Filter filter = null;
 
-	public BestFirstSearch(State s)
-    {
+	public BestFirstSearch(State s) {
 		this(s, new HValueComparator());
 	}
 
-	public BestFirstSearch(State s, Comparator c)
-    {
+	public BestFirstSearch(State s, Comparator c) {
 		super(s);
 		setComparator(c);
 
@@ -35,18 +33,15 @@ public class BestFirstSearch extends Search
 		open = new TreeSet(comp);
 	}
 
-	public void setFilter(Filter f)
-	{
+	public void setFilter(Filter f) {
 		filter = f;
 	}
 
-	public void updateOpen(State S)
-    {
+	public void updateOpen(State S) {
 		open.addAll(S.getNextStates(filter.getActions(S)));
 	}
 
-	public State removeNext()
-    {
+	public State removeNext() {
 		State S = (State) open.first();
 		open.remove(S);
 		return S;
@@ -66,8 +61,7 @@ public class BestFirstSearch extends Search
 
 		open.add(start);
 
-		while (!open.isEmpty())
-		{
+		while (!open.isEmpty()) {
 			State s = removeNext();
 			if (needToVisit(s)) {
 				++nodeCount;
