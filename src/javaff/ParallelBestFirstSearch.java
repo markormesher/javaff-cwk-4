@@ -23,7 +23,6 @@ public class ParallelBestFirstSearch extends ParallelSearch {
 
 	@Override
 	public javaff.planning.State doSearch(TemporalMetricState initialState) {
-		JavaFF.infoOutput.println("BFS running");
 		BestFirstSearch bfs = new BestFirstSearch(initialState);
 		bfs.setFilter(new NullFilter());
 		return bfs.search();
