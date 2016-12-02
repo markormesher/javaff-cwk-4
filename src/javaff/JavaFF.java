@@ -27,7 +27,7 @@ import javaff.search.Search;
 import javaff.search.BestFirstSearch;
 import javaff.search.HillClimbingSearch;
 import javaff.search.BestSuccessorSelector;
-import javaff.search.IdentidemSearch;
+import javaff.search.OctoSearch;
 
 
 
@@ -197,10 +197,11 @@ public class JavaFF
 
 		if (goalState == null) // if we can't find a solution in the first attempt.
 		{
-			infoOutput.println("TRYING IDENTIDEM");
+			infoOutput.println("TRYING OCTO");
 			
-			IdentidemSearch idn = new IdentidemSearch(initialState);
-			idn.setFilter(HelpfulFilter.getInstance());
+			OctoSearch idn = new OctoSearch(initialState);
+			//On average OCTO performs better with a NullFilter
+			idn.setFilter(NullFilter.getInstance());
 			idn.setSelector(BestSuccessorSelector.getInstance());
 			goalState = idn.successorSelectorSearch();
 			if(goalState != null){

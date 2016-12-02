@@ -10,29 +10,29 @@ import java.util.Comparator;
 import java.math.BigDecimal;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Random;
 import javaff.search.SuccessorSelector;
 
-/* Identidem is built on the Enforced Hill Climbing framework, I will be using the EHC skeleton code to 
+
+/* OctoSearch is built on the Enforced Hill Climbing framework, I will be using the EHC skeleton code to 
 	implement the Identidem algorithm, possibly with lookaheads
 
 	Sedar Olmez 01/12/2016*/
 
-public class IdentidemSearch extends Search
+public class OctoSearch extends Search
 {
 	protected BigDecimal bestHValue;
-
 	protected Hashtable closed;
 	protected LinkedList open;
 	protected Filter filter = null;
-	protected int probeDepthBound;
 	protected SuccessorSelector SS1;
 	
-	public IdentidemSearch(State s)
+	public OctoSearch(State s)
 	{
 		this(s, new HValueComparator());
 	}
 
-	public IdentidemSearch(State s, Comparator c)
+	public OctoSearch(State s, Comparator c)
 	{
 		super(s);
 		setComparator(c);
@@ -48,7 +48,6 @@ public class IdentidemSearch extends Search
 
 	public State removeNext()
 	{
-			
 		return (State) ((LinkedList) open).removeFirst();
 	}
 
@@ -112,49 +111,48 @@ public class IdentidemSearch extends Search
 	}
 	
 	public State search() {
+		// int increment = 0;
 		
-		if (start.goalReached()) { 
-			return start;
-		}
+		// if (start.goalReached()) { 
+		// 	return start;
+		// }
 
-		needToVisit(start); 
-		open.add(start); 
-		bestHValue = start.getHValue();
-		javaff.JavaFF.infoOutput.println(bestHValue);
+		// needToVisit(start); 
+		// open.add(start); 
+		// bestHValue = start.getHValue();
+		// javaff.JavaFF.infoOutput.println(bestHValue);
 		
-		while (!open.isEmpty()) 
-		{	
-			 State s = removeNext(); //Initial node
+		// while (!open.isEmpty()) 
+		// {	
+		// 	 State s = removeNext(); //Initial node
 			
-			 Set neighbour = s.getNextStates(filter.getActions(s)); // and find its neighbourhood
+		// 	 Set neighbour = s.getNextStates(filter.getActions(s)); // and find its neighbourhood
 			
-			 Iterator succItr = neighbour.iterator();			
+		// 	 Iterator succItr = neighbour.iterator();			
 		
-			 while (succItr.hasNext()) {
+		// 	 while (succItr.hasNext()) {
 
-			 	State succ = (State) succItr.next(); // next successor
+		// 	 	State succ = (State) succItr.next(); // next successor
 
-				// if (needToVisit(succ)) {
+		// 		if (needToVisit(succ)) {
+		// 			increment++;
 
-			 // 		if (succ.goalReached()) { // if we've found a goal state - return it as the solution
-			 // 			return succ;
-			 // 		} else if (succ.getHValue() <= s.getHValue) {	
-				// 		// if we've found a state with a better heuristic value than the best seen so far
-				// 		bestHValue = succ.getHValue(); // note the new best avlue
-				// 		javaff.JavaFF.infoOutput.println(bestHValue);
-				// 		open = new LinkedList(); // clear the open list
-				// 		open.add(succ); // put this on it
-				// 		break; // and skip looking at the other successors
-				// 	} else {
-
-				// 		//If no better heuristic value found, then we must look ahead using the probeDepthBound
-
-				// 		open.add(succ); // otherwise, add to the open list
-				// 	}
-			 // 	}
-			}
-
-		}
-		return null;
+		// 	 		if (succ.goalReached()) { // if we've found a goal state - return it as the solution
+		// 	 			return succ;
+		// 	 		} else if (bestHValue == null || succ.getHValue().compareTo(bestHValue) < 0) {	
+		// 				// if we've found a state with a better heuristic value than the best seen so far
+		// 				bestHValue = succ.getHValue(); // note the new best avlue
+		// 				javaff.JavaFF.infoOutput.println(bestHValue);
+		// 				open = new LinkedList(); // clear the open list
+		// 				open.add(succ); // put this on it
+		// 				break; // and skip looking at the other successors
+		// 			}else{
+						
+		// 				open.add(succ);
+		// 			} 
+		// 	 	}
+		// 	}
+		// }
+		 return null;
 	}
 }
