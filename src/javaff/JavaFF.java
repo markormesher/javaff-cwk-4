@@ -201,12 +201,14 @@ public class JavaFF
 			
 			OctoSearch idn = new OctoSearch(initialState);
 			//On average OCTO performs better with a NullFilter
-			idn.setFilter(NullFilter.getInstance());
-			idn.setSelector(BestSuccessorSelector.getInstance());
-			goalState = idn.successorSelectorSearch();
-			if(goalState != null){
-				return goalState;
-			}
+			
+				//idn.setProbeBound(9);
+				idn.setFilter(HelpfulFilter.getInstance());
+				idn.setSelector(BestSuccessorSelector.getInstance());
+				goalState = idn.successorSelectorSearch();
+			
+			return goalState;
+		
 			//EXERCISE 3: DEPTH-BOUNDED SEARCH WITH RESTARTS
 			// for (int depthBound = 5; depthBound < 100; ++depthBound){
 

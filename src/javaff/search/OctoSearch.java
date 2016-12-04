@@ -24,6 +24,7 @@ public class OctoSearch extends Search
 	protected BigDecimal bestHValue;
 	protected Hashtable closed;
 	protected LinkedList open;
+	protected int probe;
 	protected Filter filter = null;
 	protected SuccessorSelector SS1;
 	
@@ -53,6 +54,10 @@ public class OctoSearch extends Search
 
 	public void setSelector(SuccessorSelector s){
 		SS1 = s;
+	}
+
+	public void setProbeBound(int n){
+		probe = n;
 	}
 	
 	public boolean needToVisit(State s) {
@@ -85,9 +90,11 @@ public class OctoSearch extends Search
 
 		//Successor selector search.
 	public State successorSelectorSearch(){
+
 		State root = start;
 		Set firstsuccessor = root.getNextStates(root.getActions());
 		State selectorState = SS1.choose(firstsuccessor);
+
 		State goal = null;
 		Boolean exitWhile = false;
 
@@ -100,11 +107,13 @@ public class OctoSearch extends Search
 
 		while (!exitWhile){
 			selectorState = SS1.choose(successors);
+
 			if(selectorState.goalReached()){
 				return selectorState;
 			}else{
 				successors.addAll(selectorState.getNextStates(selectorState.getActions()));
 			}
+			probe--;
 		}
 		exitWhile = true;
 		return goal;

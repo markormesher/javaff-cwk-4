@@ -8,9 +8,9 @@
 package javaff.planning;
 
 import javaff.data.Action;
-
 import java.util.Set;
 import java.util.HashSet;
+import javaff.planning.STRIPSState;
 import java.util.Iterator;
 
 public class HelpfulFilter implements Filter
@@ -28,15 +28,18 @@ public class HelpfulFilter implements Filter
 	}
 
 	public Set getActions(State S)
-	{
+	 {
 		STRIPSState SS = (STRIPSState) S;
 		SS.calculateRP(); // get the relaxed plan to the goal, to make sure helpful actions exist for S
 		Set ns = new HashSet();
 		Iterator ait = SS.helpfulActions.iterator(); // iterate over helpful actions
+		Action a;
+
 		while (ait.hasNext())
 		{
-			Action a = (Action) ait.next();
+			a = (Action) ait.next();
 			if (a.isApplicable(S)) ns.add(a); // and add them to the set to return if they're applicable
+
 		}
 		return ns;
 	}
