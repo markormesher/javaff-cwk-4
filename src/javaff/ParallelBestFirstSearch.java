@@ -1,14 +1,13 @@
 package javaff;
 
-import javaff.data.GroundProblem;
 import javaff.planning.NullFilter;
 import javaff.planning.TemporalMetricState;
 import javaff.search.BestFirstSearch;
 
 public class ParallelBestFirstSearch extends ParallelSearch {
 
-	public ParallelBestFirstSearch(GroundProblem groundProblem, TemporalMetricState initialState) {
-		super(groundProblem, initialState);
+	ParallelBestFirstSearch(TemporalMetricState initialState) {
+		super(initialState);
 	}
 
 	@Override

@@ -1,14 +1,13 @@
 package javaff;
 
-import javaff.data.GroundProblem;
 import javaff.planning.HelpfulFilter;
 import javaff.planning.TemporalMetricState;
 import javaff.search.HillClimbingSearch;
 
 public class ParallelHillClimbingHelpfulActionSearch extends ParallelSearch {
 
-	public ParallelHillClimbingHelpfulActionSearch(GroundProblem groundProblem, TemporalMetricState initialState) {
-		super(groundProblem, initialState);
+	ParallelHillClimbingHelpfulActionSearch(TemporalMetricState initialState) {
+		super(initialState);
 	}
 
 	@Override

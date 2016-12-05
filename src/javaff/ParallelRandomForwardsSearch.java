@@ -1,14 +1,13 @@
 package javaff;
 
-import javaff.data.GroundProblem;
 import javaff.planning.NullFilter;
 import javaff.planning.TemporalMetricState;
 import javaff.search.RandomForwardsSearch;
 
 public class ParallelRandomForwardsSearch extends ParallelSearch {
 
-	public ParallelRandomForwardsSearch(GroundProblem groundProblem, TemporalMetricState initialState) {
-		super(groundProblem, initialState);
+	public ParallelRandomForwardsSearch(TemporalMetricState initialState) {
+		super(initialState);
 	}
 
 	@Override

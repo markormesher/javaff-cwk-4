@@ -102,19 +102,19 @@ public class JavaFF {
 
 		switch (type) {
 			case BEST_FIRST_NULL_FILTER:
-				new ParallelBestFirstSearch(localGroundProblem, initialState).start();
+				new ParallelBestFirstSearch(initialState).start();
 				break;
 
 			case HC_HELPFUL_FILTER:
-				new ParallelHillClimbingHelpfulActionSearch(localGroundProblem, initialState).start();
+				new ParallelHillClimbingHelpfulActionSearch(initialState).start();
 				break;
 
 			case EHC_HELPFUL_FILTER:
-				new ParallelEnforcedHillClimbingHelpfulActionSearch(localGroundProblem, initialState).start();
+				new ParallelEnforcedHillClimbingHelpfulActionSearch(initialState).start();
 				break;
 
 			case RANDOM_NULL_FILTER:
-				new ParallelRandomForwardsSearch(localGroundProblem, initialState).start();
+				new ParallelRandomForwardsSearch(initialState).start();
 				break;
 		}
 	}

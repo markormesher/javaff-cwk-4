@@ -1,16 +1,13 @@
 package javaff;
 
-import javaff.data.GroundProblem;
 import javaff.data.TotalOrderPlan;
 import javaff.planning.TemporalMetricState;
 
 public abstract class ParallelSearch extends Thread {
 
-	private GroundProblem groundProblem;
 	private TemporalMetricState initialState;
 
-	public ParallelSearch(GroundProblem groundProblem, TemporalMetricState initialState) {
-		this.groundProblem = groundProblem;
+	ParallelSearch(TemporalMetricState initialState) {
 		this.initialState = initialState;
 	}
 
