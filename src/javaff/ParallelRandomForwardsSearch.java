@@ -6,8 +6,11 @@ import javaff.search.RandomForwardsSearch;
 
 public class ParallelRandomForwardsSearch extends ParallelSearch {
 
-	public ParallelRandomForwardsSearch(TemporalMetricState initialState) {
+	private int depthBound;
+
+	public ParallelRandomForwardsSearch(TemporalMetricState initialState, int depthBound) {
 		super(initialState);
+		this.depthBound = depthBound;
 	}
 
 	@Override
@@ -22,7 +25,7 @@ public class ParallelRandomForwardsSearch extends ParallelSearch {
 
 	@Override
 	public javaff.planning.State doSearch(TemporalMetricState initialState) {
-		RandomForwardsSearch rfs = new RandomForwardsSearch(initialState);
+		RandomForwardsSearch rfs = new RandomForwardsSearch(initialState, depthBound);
 		rfs.setFilter(new NullFilter());
 		return rfs.search();
 	}

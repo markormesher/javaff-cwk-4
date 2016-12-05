@@ -109,15 +109,17 @@ public class JavaFF {
 				break;
 
 			case HC_HELPFUL_FILTER:
-				new ParallelHillClimbingHelpfulActionSearch(initialState).start();
+				// bound the depth to the best plan found so far - no point in finding worse plans!
+				new ParallelHillClimbingHelpfulActionSearch(initialState, bestPlanLength).start();
 				break;
 
 			case EHC_HELPFUL_FILTER:
-				new ParallelEnforcedHillClimbingHelpfulActionSearch(initialState).start();
+				new ParallelEnforcedHillClimbingHelpfulActionSearch(initialState, bestPlanLength).start();
 				break;
 
 			case RANDOM_NULL_FILTER:
-				new ParallelRandomForwardsSearch(initialState).start();
+				// bound the depth to the best plan found so far - no point in finding worse plans!
+				new ParallelRandomForwardsSearch(initialState, bestPlanLength).start();
 				break;
 		}
 	}

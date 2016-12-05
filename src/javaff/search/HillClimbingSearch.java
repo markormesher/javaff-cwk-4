@@ -12,14 +12,16 @@ import java.util.Set;
 public class HillClimbingSearch extends Search {
 	private Hashtable<Integer, State> closed = new Hashtable<>();
 	protected Filter filter = null;
+	private int depthBound;
 
-	public HillClimbingSearch(State s) {
-		this(s, new HValueComparator());
+	public HillClimbingSearch(State s, int depthBound) {
+		this(s, new HValueComparator(), depthBound);
 	}
 
-	private HillClimbingSearch(State s, Comparator c) {
+	private HillClimbingSearch(State s, Comparator c, int depthBound) {
 		super(s);
 		setComparator(c);
+		this.depthBound = depthBound;
 	}
 
 	public void setFilter(Filter f) {
@@ -44,6 +46,8 @@ public class HillClimbingSearch extends Search {
 
 		// start from the initial state
 		State open = start;
+
+		int depth = 0;
 
 		while (open != null) { // whilst there is still a state to consider
 			// expand the current open state
@@ -81,6 +85,10 @@ public class HillClimbingSearch extends Search {
 			} else {
 				open = bestSuccessors.get(javaff.JavaFF.generator.nextInt(bestSuccessors.size()));
 			}
+
+			// quit if we hit the depth bound
+			++depth;
+			if (depthBound > 0 && depth >= depthBound) break;
 		}
 
 		// failed!
