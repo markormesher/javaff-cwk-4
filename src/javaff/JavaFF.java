@@ -114,6 +114,7 @@ public class JavaFF {
 				break;
 
 			case EHC_HELPFUL_FILTER:
+				// bound the depth to the best plan found so far - no point in finding worse plans!
 				new ParallelEnforcedHillClimbingHelpfulActionSearch(initialState, bestPlanLength).start();
 				break;
 
