@@ -25,7 +25,7 @@ public class MetricState extends STRIPSState
 
 	protected MetricState()
 	{
-		
+
 	}
 
 	public MetricState(Set a, Set f, GroundCondition g, Map funcs, Metric m)
@@ -48,7 +48,7 @@ public class MetricState extends STRIPSState
 		TotalOrderPlan p = (TotalOrderPlan) plan.clone();
 		Map nfuncs = (Map) ((Hashtable) funcValues).clone();
 		MetricState ms = new MetricState(actions, nf, goal, nfuncs, p, metric);
-		ms.setRPG(RPG);
+		ms.setRPG(relaxedPlanningGraph);
 //		ms.setFilter(filter);
 		return ms;
 	}

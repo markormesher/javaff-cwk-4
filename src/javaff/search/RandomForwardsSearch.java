@@ -7,48 +7,34 @@
 
 package javaff.search;
 
-import javaff.planning.State;
+import javaff.JavaFF;
 import javaff.planning.Filter;
+import javaff.planning.State;
 
-import java.util.Comparator;
-import java.util.TreeSet;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 
-public class BestFirstSearch extends Search {
+public class RandomForwardsSearch extends Search {
 
 	protected Hashtable closed;
-	protected TreeSet open;
+	protected List<State> open;
 	protected Filter filter = null;
 
-	public BestFirstSearch(State s) {
-		this(s, new HValueComparator());
-	}
-
-	public BestFirstSearch(State s, Comparator c) {
+	public RandomForwardsSearch(State s) {
 		super(s);
-		setComparator(c);
 
 		closed = new Hashtable();
-		open = new TreeSet(comp);
+		open = new ArrayList<>();
 	}
 
 	public void setFilter(Filter f) {
 		filter = f;
 	}
 
-	public void updateOpen(State S) {
-		open.addAll(S.getNextStates(filter.getActions(S)));
-	}
-
-	public State removeNext() {
-		State S = (State) open.first();
-		open.remove(S);
-		return S;
-	}
-
-	public boolean needToVisit(State s) {
-		Integer Shash = new Integer(s.hashCode());
+	private boolean needToVisit(State s) {
+		Integer Shash = s.hashCode();
 		State D = (State) closed.get(Shash);
 
 		if (closed.containsKey(Shash) && D.equals(s)) return false;
@@ -62,13 +48,15 @@ public class BestFirstSearch extends Search {
 		open.add(start);
 
 		while (!open.isEmpty()) {
-			State s = removeNext();
+			State s = open.get(JavaFF.generator.nextInt(open.size()));
+			open.remove(s);
 			if (needToVisit(s)) {
 				++nodeCount;
 				if (s.goalReached()) {
 					return s;
 				} else {
-					updateOpen(s);
+					open.clear();
+					open.addAll(s.getNextStates(filter.getActions(s)));
 				}
 			}
 

@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-public class GroundProblem
+public class GroundProblem implements Cloneable
 {
     //public Set facts = new HashSet();                  // (Proposition)
     public Set actions = new HashSet();                // (GroundAction)
@@ -42,8 +42,22 @@ public class GroundProblem
 		functionValues = f;
 		metric = m;
 	}
-	
-    public STRIPSState getSTRIPSInitialState()
+
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		Set actionsCopy = new HashSet();
+		actionsCopy.addAll(actions);
+
+		Set initialCopy = new HashSet();
+		initialCopy.addAll(initial);
+
+		Map functionValuesCopy = new Hashtable();
+		functionValuesCopy.putAll(functionValues);
+
+		return new GroundProblem(actionsCopy, initialCopy, goal, functionValuesCopy, metric);
+	}
+
+	public STRIPSState getSTRIPSInitialState()
     {
     	STRIPSState s = new STRIPSState(actions, initial, goal);
 		s.setRPG(new RelaxedPlanningGraph(this));
@@ -88,5 +102,5 @@ public class GroundProblem
 		return state;
 	}
 
-	
+
 }

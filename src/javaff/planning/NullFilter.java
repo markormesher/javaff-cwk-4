@@ -8,35 +8,19 @@
 package javaff.planning;
 
 import javaff.data.Action;
-import java.util.Iterator;
-import java.util.Set;
+
 import java.util.HashSet;
+import java.util.Set;
 
-public class NullFilter implements Filter
-{
-	private static NullFilter nf = null;
+public class NullFilter implements Filter {
 
-	private NullFilter()
-	{
-	}
-
-	public static NullFilter getInstance()
-	{
-		if (nf == null) nf = new NullFilter(); // Singleton design pattern - return one central instance
-		return nf;
-	}
-
-	public Set getActions(State S)
-	{
-		Set actionsFromS = S.getActions(); // get the logically appicable actions in S
-		Set ns = new HashSet();
-		Iterator ait = actionsFromS.iterator(); // Get an iterator over these actions
-		while (ait.hasNext())
-		{
-			Action a = (Action) ait.next();
-			if (a.isApplicable(S)) ns.add(a); // Check they are applicable (will check numeric/temporal constraints)
+	public Set getActions(State state) {
+		Set actionsFromS = state.getActions();
+		Set<Action> ns = new HashSet<>();
+		for (Object action : actionsFromS) {
+			if (((Action) action).isApplicable(state)) ns.add((Action) action);
 		}
 		return ns;
 	}
 
-} 
+}
