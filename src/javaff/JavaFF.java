@@ -22,6 +22,10 @@ import java.util.Random;
 
 public class JavaFF {
 
+	/* START OPTIONS */
+	public static final boolean SINGLE_SOLUTION = false;
+	/* END OPTIONS */
+
 	public static final BigDecimal EPSILON = new BigDecimal(0.01).setScale(2, BigDecimal.ROUND_HALF_EVEN);
 	public static final BigDecimal MAX_DURATION = new BigDecimal("100000").setScale(2, BigDecimal.ROUND_HALF_EVEN); //maximum duration in a duration constraint
 
@@ -37,7 +41,6 @@ public class JavaFF {
 	private static int bestPlanLength = -1;
 
 	private static File solutionFile;
-
 	private static GroundProblem groundProblem;
 
 	public static void main(String args[]) {
@@ -121,7 +124,13 @@ public class JavaFF {
 
 	static synchronized void onPlanFound(TotalOrderPlan totalOrderPlan, boolean reRun, SearchType type, double planningTime) {
 
-		// cheapest checks first:
+		// quit if we're in single-solution mode and we already found something
+		if (SINGLE_SOLUTION && solutions.size() > 0) {
+			System.exit(0);
+			return;
+		}
+
+		// cheapest solution checks first:
 
 		boolean planWasFound = totalOrderPlan != null;
 		if (!planWasFound) {
@@ -141,6 +150,8 @@ public class JavaFF {
 			if (reRun) spawnSearch(type);
 			return;
 		}
+
+		// by this point, we know that we have a unique plan with the best length seen so far
 
 		// **************
 		// Print a header
@@ -175,6 +186,14 @@ public class JavaFF {
 		infoOutput.println("Planning Time   =   " + planningTime + "sec");
 		infoOutput.println("Scheduling Time =   " + schedulingTime + "sec");
 
+		// **************
+		// Next iteration
+		// **************
+
+		// quit now if we're in single solution mode
+		if (SINGLE_SOLUTION) System.exit(0);
+
+		// otherwise, keep going
 		if (reRun) spawnSearch(type);
 	}
 
