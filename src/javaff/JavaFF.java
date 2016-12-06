@@ -27,7 +27,7 @@ public class JavaFF {
 	/* END OPTIONS */
 
 	public static final BigDecimal EPSILON = new BigDecimal(0.01).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-	public static final BigDecimal MAX_DURATION = new BigDecimal("100000").setScale(2, BigDecimal.ROUND_HALF_EVEN); //maximum duration in a duration constraint
+	public static final BigDecimal MAX_DURATION = new BigDecimal("100000").setScale(2, BigDecimal.ROUND_HALF_EVEN);
 
 	public static Random generator = null;
 
