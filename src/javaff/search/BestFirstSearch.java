@@ -7,72 +7,71 @@
 
 package javaff.search;
 
-import javaff.planning.State;
 import javaff.planning.Filter;
+import javaff.planning.State;
 
-import java.util.Comparator;
-import java.util.TreeSet;
-import java.util.Hashtable;
-
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class BestFirstSearch extends Search {
 
-	protected Hashtable closed;
-	protected TreeSet open;
-	protected Filter filter = null;
+	protected HashSet<State> open;
+	private HashMap<Integer, State> closed;
 
-	public BestFirstSearch(State s) {
-		this(s, new HValueComparator());
+	protected Filter filter;
+	private SuccessorSelector successorSelector;
+
+	public BestFirstSearch(State state) {
+		super(state);
+		closed = new HashMap<>();
+		open = new HashSet<>();
 	}
 
-	public BestFirstSearch(State s, Comparator c) {
-		super(s);
-		setComparator(c);
-
-		closed = new Hashtable();
-		open = new TreeSet(comp);
+	public void setFilter(Filter filter) {
+		this.filter = filter;
 	}
 
-	public void setFilter(Filter f) {
-		filter = f;
+	public void setSuccessorSelector(SuccessorSelector successorSelector) {
+		this.successorSelector = successorSelector;
 	}
 
-	public void updateOpen(State S) {
-		open.addAll(S.getNextStates(filter.getActions(S)));
+	private State removeNext() {
+		State next = successorSelector.choose(open);
+		open.remove(next);
+		return next;
 	}
 
-	public State removeNext() {
-		State S = (State) open.first();
-		open.remove(S);
-		return S;
+	private boolean visited(State s) {
+		Integer stateHash = s.hashCode();
+		State retrievedState = closed.get(stateHash);
+
+		return closed.containsKey(stateHash) && retrievedState.equals(s);
 	}
 
-	public boolean needToVisit(State s) {
-		Integer Shash = new Integer(s.hashCode());
-		State D = (State) closed.get(Shash);
-
-		if (closed.containsKey(Shash) && D.equals(s)) return false;
-
-		closed.put(Shash, s);
-		return true;
+	private void visit(State s) {
+		Integer stateHash = s.hashCode();
+		closed.put(stateHash, s);
 	}
 
 	public State search() {
-
 		open.add(start);
 
 		while (!open.isEmpty()) {
 			State s = removeNext();
-			if (needToVisit(s)) {
-				++nodeCount;
+			if (!visited(s)) {
+				visit(s);
 				if (s.goalReached()) {
 					return s;
 				} else {
-					updateOpen(s);
+					Set<State> nextStates = s.getNextStates(filter.getActions(s));
+					for (State ns : nextStates) {
+						if (!visited(ns)) open.add(ns);
+					}
 				}
 			}
-
 		}
+
 		return null;
 	}
 
