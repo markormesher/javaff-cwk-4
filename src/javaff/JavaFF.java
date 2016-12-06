@@ -79,7 +79,7 @@ public class JavaFF {
 
 		// spawn searches
 		// TODO: feature switches to decide what to run
-		spawnSearch(SearchType.BEST_FIRST_NULL_FILTER);
+		spawnSearch(SearchType.BEST_FIRST_NULL_FILTER_WITH_RANDOM);
 		spawnSearch(SearchType.HC_HELPFUL_FILTER);
 		spawnSearch(SearchType.EHC_HELPFUL_FILTER);
 		spawnSearch(SearchType.RANDOM_NULL_FILTER);
@@ -104,7 +104,7 @@ public class JavaFF {
 		}
 
 		switch (type) {
-			case BEST_FIRST_NULL_FILTER:
+			case BEST_FIRST_NULL_FILTER_WITH_RANDOM:
 				new ParallelBestFirstSearch(initialState).start();
 				break;
 
@@ -207,13 +207,13 @@ public class JavaFF {
 			plan.print(printWriter);
 			printWriter.close();
 		} catch (FileNotFoundException e) {
-			errorOutput.println(e);
 			e.printStackTrace();
+			errorOutput.println(e);
 		}
 	}
 
 	public enum SearchType {
-		BEST_FIRST_NULL_FILTER,
+		BEST_FIRST_NULL_FILTER_WITH_RANDOM,
 		EHC_HELPFUL_FILTER,
 		HC_HELPFUL_FILTER,
 		RANDOM_NULL_FILTER

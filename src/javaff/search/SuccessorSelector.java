@@ -14,4 +14,4 @@ public interface SuccessorSelector {
 
 	State choose(Set toChooseFrom);
 
-};
+}
