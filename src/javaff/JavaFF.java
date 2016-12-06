@@ -23,7 +23,13 @@ import java.util.Random;
 public class JavaFF {
 
 	/* START OPTIONS */
-	public static final boolean SINGLE_SOLUTION = false;
+	private static final boolean SINGLE_SOLUTION = false;
+	private static final SearchType[] ALGORITHMS_TO_USE = new SearchType[]{
+			SearchType.RANDOM_NULL_FILTER,
+			SearchType.BEST_FIRST_NULL_FILTER_WITH_RANDOM,
+			SearchType.HC_HELPFUL_FILTER,
+			SearchType.EHC_HELPFUL_FILTER
+	};
 	/* END OPTIONS */
 
 	public static final BigDecimal EPSILON = new BigDecimal(0.01).setScale(2, BigDecimal.ROUND_HALF_EVEN);
@@ -78,14 +84,9 @@ public class JavaFF {
 		}
 
 		// spawn searches
-		// TODO: feature switches to decide what to run
-		spawnSearch(SearchType.BEST_FIRST_NULL_FILTER_WITH_RANDOM);
-		spawnSearch(SearchType.HC_HELPFUL_FILTER);
-		spawnSearch(SearchType.EHC_HELPFUL_FILTER);
-		spawnSearch(SearchType.RANDOM_NULL_FILTER);
+		for (SearchType st : ALGORITHMS_TO_USE) spawnSearch(st);
 
-		infoOutput.println("Setup finished - planners now running in background");
-		infoOutput.println();
+		infoOutput.println("Setup finished - planners now running on background threads");
 	}
 
 	private static void spawnSearch(SearchType type) {
@@ -161,6 +162,8 @@ public class JavaFF {
 		// **************
 
 		infoOutput.println();
+		infoOutput.println("-----------------------------");
+		infoOutput.println();
 		infoOutput.println(((System.currentTimeMillis() - startTime) / 1000.0) + "s: Better plan found by " + type);
 		infoOutput.println("This is plan #" + solutions.size());
 		infoOutput.println("Best length was " + (bestPlanLength < 0 ? "inf" : bestPlanLength));
@@ -186,6 +189,8 @@ public class JavaFF {
 		timeStampedPlan.print(planOutput);
 		if (solutionFile != null) writePlanToFile(timeStampedPlan, solutionFile);
 
+		infoOutput.println();
+		infoOutput.println("Plan Length     =   " + bestPlanLength);
 		infoOutput.println("Planning Time   =   " + planningTime + "sec");
 		infoOutput.println("Scheduling Time =   " + schedulingTime + "sec");
 
