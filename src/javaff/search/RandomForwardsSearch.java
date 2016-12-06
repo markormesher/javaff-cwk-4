@@ -21,9 +21,12 @@ public class RandomForwardsSearch extends Search {
 	protected Hashtable closed;
 	protected List<State> open;
 	protected Filter filter = null;
+	private int depthBound;
 
-	public RandomForwardsSearch(State s) {
+	public RandomForwardsSearch(State s, int depthBound) {
 		super(s);
+
+		this.depthBound = depthBound;
 
 		closed = new Hashtable();
 		open = new ArrayList<>();
@@ -46,6 +49,7 @@ public class RandomForwardsSearch extends Search {
 	public State search() {
 
 		open.add(start);
+		int depth = 0;
 
 		while (!open.isEmpty()) {
 			State s = open.get(JavaFF.generator.nextInt(open.size()));
@@ -60,6 +64,9 @@ public class RandomForwardsSearch extends Search {
 				}
 			}
 
+			// quit if we hit the depth bound
+			++depth;
+			if (depthBound > 0 && depth >= depthBound) break;
 		}
 		return null;
 	}

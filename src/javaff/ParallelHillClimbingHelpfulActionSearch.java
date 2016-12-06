@@ -6,8 +6,11 @@ import javaff.search.HillClimbingSearch;
 
 public class ParallelHillClimbingHelpfulActionSearch extends ParallelSearch {
 
-	ParallelHillClimbingHelpfulActionSearch(TemporalMetricState initialState) {
+	private int depthBound;
+
+	ParallelHillClimbingHelpfulActionSearch(TemporalMetricState initialState, int depthBound) {
 		super(initialState);
+		this.depthBound = depthBound;
 	}
 
 	@Override
@@ -22,7 +25,7 @@ public class ParallelHillClimbingHelpfulActionSearch extends ParallelSearch {
 
 	@Override
 	public javaff.planning.State doSearch(TemporalMetricState initialState) {
-		HillClimbingSearch hcs = new HillClimbingSearch(initialState);
+		HillClimbingSearch hcs = new HillClimbingSearch(initialState, depthBound);
 		hcs.setFilter(new HelpfulFilter());
 		return hcs.search();
 	}
