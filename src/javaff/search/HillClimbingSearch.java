@@ -83,7 +83,7 @@ public class HillClimbingSearch extends Search {
 			if (bestSuccessors.isEmpty()) {
 				open = null;
 			} else {
-				open = bestSuccessors.get(javaff.JavaFF.generator.nextInt(bestSuccessors.size()));
+				open = bestSuccessors.get((int) (System.nanoTime() % bestSuccessors.size()));
 			}
 
 			// quit if we hit the depth bound
