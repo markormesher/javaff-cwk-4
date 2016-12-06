@@ -26,9 +26,9 @@ public class JavaFF {
 	private static final boolean SINGLE_SOLUTION = false;
 	private static final SearchType[] ALGORITHMS_TO_USE = new SearchType[]{
 			SearchType.RANDOM_NULL_FILTER,
-			SearchType.BEST_FIRST_NULL_FILTER_WITH_RANDOM,
+			SearchType.EHC_HELPFUL_FILTER,
 			SearchType.HC_HELPFUL_FILTER,
-			SearchType.EHC_HELPFUL_FILTER
+			SearchType.BEST_FIRST_NULL_FILTER_WITH_RANDOM
 	};
 	/* END OPTIONS */
 
@@ -105,8 +105,13 @@ public class JavaFF {
 		}
 
 		switch (type) {
-			case BEST_FIRST_NULL_FILTER_WITH_RANDOM:
-				new ParallelBestFirstSearch(initialState).start();
+			case RANDOM_NULL_FILTER:
+				// bound the depth to the best plan found so far - no point in finding worse plans!
+				new ParallelRandomForwardsSearch(initialState, bestPlanLength).start();
+				break;
+
+			case EHC_HELPFUL_FILTER:
+				new ParallelEnforcedHillClimbingHelpfulActionSearch(initialState).start();
 				break;
 
 			case HC_HELPFUL_FILTER:
@@ -114,14 +119,8 @@ public class JavaFF {
 				new ParallelHillClimbingHelpfulActionSearch(initialState, bestPlanLength).start();
 				break;
 
-			case EHC_HELPFUL_FILTER:
-				// bound the depth to the best plan found so far - no point in finding worse plans!
-				new ParallelEnforcedHillClimbingHelpfulActionSearch(initialState, bestPlanLength).start();
-				break;
-
-			case RANDOM_NULL_FILTER:
-				// bound the depth to the best plan found so far - no point in finding worse plans!
-				new ParallelRandomForwardsSearch(initialState, bestPlanLength).start();
+			case BEST_FIRST_NULL_FILTER_WITH_RANDOM:
+				new ParallelBestFirstSearch(initialState).start();
 				break;
 		}
 	}
