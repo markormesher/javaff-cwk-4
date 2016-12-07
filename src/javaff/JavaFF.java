@@ -38,7 +38,8 @@ public class JavaFF {
 	public static final PrintStream infoOutput = System.out;
 	public static final PrintStream errorOutput = System.err;
 
-	private static final ExecutorService executorService = Executors.newFixedThreadPool(6);
+	private static final int logicalThreads = Runtime.getRuntime().availableProcessors();
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(logicalThreads);
 	private static long startTime;
 	private static HashSet<TotalOrderPlan> solutions = new HashSet<>();
 	private static int bestPlanLength = -1;
@@ -87,7 +88,7 @@ public class JavaFF {
 		spawnSearch(SearchType.EHC_HELPFUL_FILTER);
 		spawnSearch(SearchType.RANDOM_NULL_FILTER);
 
-		infoOutput.println("Setup finished - planners now running in background");
+		infoOutput.println("Setup finished - planners now running in background on " + logicalThreads + " logical threads");
 		infoOutput.println();
 	}
 
