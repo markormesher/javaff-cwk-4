@@ -19,6 +19,8 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class JavaFF {
 
@@ -42,6 +44,8 @@ public class JavaFF {
 	public static final PrintStream infoOutput = System.out;
 	public static final PrintStream errorOutput = System.err;
 
+	private static final int logicalThreads = Runtime.getRuntime().availableProcessors();
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(logicalThreads);
 	private static long startTime;
 	private static HashSet<TotalOrderPlan> solutions = new HashSet<>();
 	private static int bestPlanLength = -1;
@@ -86,7 +90,8 @@ public class JavaFF {
 		// spawn searches
 		for (SearchType st : ALGORITHMS_TO_USE) spawnSearch(st);
 
-		infoOutput.println("Setup finished - planners now running on background threads");
+		infoOutput.println("Setup finished - planners now running in background on " + logicalThreads + " logical threads");
+		infoOutput.println();
 	}
 
 	private static void spawnSearch(SearchType type) {
@@ -107,20 +112,21 @@ public class JavaFF {
 		switch (type) {
 			case RANDOM_NULL_FILTER:
 				// bound the depth to the best plan found so far - no point in finding worse plans!
-				new ParallelRandomForwardsSearch(initialState, bestPlanLength).start();
+				executorService.submit(new ParallelRandomForwardsSearch(initialState, bestPlanLength));
 				break;
 
 			case EHC_HELPFUL_FILTER:
-				new ParallelEnforcedHillClimbingHelpfulActionSearch(initialState).start();
+				// bound the depth to the best plan found so far - no point in finding worse plans!
+				executorService.submit(new ParallelEnforcedHillClimbingHelpfulActionSearch(initialState));
 				break;
 
 			case HC_HELPFUL_FILTER:
 				// bound the depth to the best plan found so far - no point in finding worse plans!
-				new ParallelHillClimbingHelpfulActionSearch(initialState, bestPlanLength).start();
+				executorService.submit(new ParallelHillClimbingHelpfulActionSearch(initialState, bestPlanLength));
 				break;
 
 			case BEST_FIRST_NULL_FILTER_WITH_RANDOM:
-				new ParallelBestFirstSearch(initialState).start();
+				executorService.submit(new ParallelBestFirstSearch(initialState));
 				break;
 		}
 	}
