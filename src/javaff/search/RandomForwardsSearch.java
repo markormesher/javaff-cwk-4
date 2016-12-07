@@ -7,7 +7,6 @@
 
 package javaff.search;
 
-import javaff.JavaFF;
 import javaff.planning.Filter;
 import javaff.planning.State;
 
@@ -52,7 +51,7 @@ public class RandomForwardsSearch extends Search {
 		int depth = 0;
 
 		while (!open.isEmpty()) {
-			State s = open.get(JavaFF.generator.nextInt(open.size()));
+			State s = open.get((int) (System.nanoTime() % open.size()));
 			open.remove(s);
 			if (needToVisit(s)) {
 				++nodeCount;

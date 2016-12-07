@@ -44,6 +44,8 @@ public abstract class ParallelSearch extends Thread {
 
 		double planningTime = (afterPlanning - startTime) / 1000.00;
 
+		System.gc();
+
 		JavaFF.onPlanFound(totalOrderPlan, reRun(), getType(), planningTime);
 	}
 

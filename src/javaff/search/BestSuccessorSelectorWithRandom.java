@@ -48,7 +48,7 @@ public class BestSuccessorSelectorWithRandom implements SuccessorSelector {
 			}
 		}
 
-		int nextChosen = javaff.JavaFF.generator.nextInt(jointBest.size()); // pick an index of the next one to have
+		int nextChosen = (int) (System.nanoTime() % jointBest.size()); // pick an index of the next one to have
 
 		Iterator skipThrough = jointBest.iterator();
 		while (nextChosen > 0) { // skip over the appropriate number of items

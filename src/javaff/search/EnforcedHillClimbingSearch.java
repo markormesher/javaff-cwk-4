@@ -19,16 +19,14 @@ public class EnforcedHillClimbingSearch extends Search {
 	protected Hashtable closed;
 	protected LinkedList open;
 	protected Filter filter = null;
-	private int depthBound;
 
-	public EnforcedHillClimbingSearch(State s, int depthBound) {
-		this(s, new HValueComparator(), depthBound);
+	public EnforcedHillClimbingSearch(State s) {
+		this(s, new HValueComparator());
 	}
 
-	public EnforcedHillClimbingSearch(State s, Comparator c, int depthBound) {
+	public EnforcedHillClimbingSearch(State s, Comparator c) {
 		super(s);
 		setComparator(c);
-		this.depthBound = depthBound;
 
 		closed = new Hashtable();
 		open = new LinkedList();
@@ -64,8 +62,6 @@ public class EnforcedHillClimbingSearch extends Search {
 		open.add(start); // add it to the open list
 		bestHValue = start.getHValue(); // and take its heuristic value as the best so far
 
-		int depth = 0;
-
 		while (!open.isEmpty()) // whilst still states to consider
 		{
 			State s = removeNext(); // get the next one
@@ -92,10 +88,6 @@ public class EnforcedHillClimbingSearch extends Search {
 					}
 				}
 			}
-
-			// quit if we hit the depth bound
-			++depth;
-			if (depthBound > 0 && depth >= depthBound) break;
 		}
 		return null;
 	}
