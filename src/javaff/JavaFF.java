@@ -44,7 +44,8 @@ public class JavaFF {
 	public static final PrintStream infoOutput = System.out;
 	public static final PrintStream errorOutput = System.err;
 
-	private static final ExecutorService executorService = Executors.newFixedThreadPool(6);
+	private static final int logicalThreads = Runtime.getRuntime().availableProcessors();
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(logicalThreads);
 	private static long startTime;
 	private static HashSet<TotalOrderPlan> solutions = new HashSet<>();
 	private static int bestPlanLength = -1;
@@ -89,7 +90,8 @@ public class JavaFF {
 		// spawn searches
 		for (SearchType st : ALGORITHMS_TO_USE) spawnSearch(st);
 
-		infoOutput.println("Setup finished - planners now running on background threads");
+		infoOutput.println("Setup finished - planners now running in background on " + logicalThreads + " logical threads");
+		infoOutput.println();
 	}
 
 	private static void spawnSearch(SearchType type) {
