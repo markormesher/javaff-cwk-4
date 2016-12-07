@@ -3,7 +3,7 @@ package javaff;
 import javaff.data.TotalOrderPlan;
 import javaff.planning.TemporalMetricState;
 
-public abstract class ParallelSearch extends Thread {
+public abstract class ParallelSearch implements Runnable {
 
 	private TemporalMetricState initialState;
 
