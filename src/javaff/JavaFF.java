@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 public class JavaFF {
 
 	/* START OPTIONS */
-	private static final boolean SINGLE_SOLUTION = false;
+	private static boolean SINGLE_SOLUTION = false;
 	private static final SearchType[] ALGORITHMS_TO_USE = new SearchType[]{
 			SearchType.RANDOM_NULL_FILTER,
 			SearchType.EHC_HELPFUL_FILTER,
@@ -56,21 +56,27 @@ public class JavaFF {
 	public static void main(String args[]) {
 		startTime = System.currentTimeMillis();
 
-		if (args.length < 2) {
-			System.out.println("Parameters needed: domainFile.pddl problemFile.pddl [random seed] [outputfile.sol]");
+		if (args.length < 3) {
+			System.out.println("Parameters needed: --mode domainFile.pddl problemFile.pddl [random seed] [outputfile.sol]");
+			return;
+		}
+
+		if (!args[0].equals("--single") && !args[0].equals("--multi")) {
+			System.out.println("First parameter must be --single or --multi");
 			return;
 		}
 
 		// read inputs
-		File domainFile = new File(args[0]);
-		File problemFile = new File(args[1]);
-		if (args.length > 2) {
-			generator = new Random(Integer.parseInt(args[2]));
+		SINGLE_SOLUTION = args[0].equals("--single");
+		File domainFile = new File(args[1]);
+		File problemFile = new File(args[2]);
+		if (args.length > 3) {
+			generator = new Random(Integer.parseInt(args[3]));
 		} else {
 			generator = new Random();
 		}
-		if (args.length > 3) {
-			solutionFile = new File(args[3]);
+		if (args.length > 4) {
+			solutionFile = new File(args[4]);
 		} else {
 			solutionFile = null;
 		}
@@ -90,6 +96,7 @@ public class JavaFF {
 		// spawn searches
 		for (SearchType st : ALGORITHMS_TO_USE) spawnSearch(st);
 
+		infoOutput.println("Running in " + (SINGLE_SOLUTION ? "SINGLE" : "MULTI") + "-solution mode");
 		infoOutput.println("Setup finished - planners now running in background on " + logicalThreads + " logical threads");
 		infoOutput.println();
 	}
